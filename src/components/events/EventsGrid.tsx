@@ -1,5 +1,5 @@
-
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -261,9 +261,11 @@ export function EventsGrid() {
                   })} • {event.time}
                 </div>
                 
-                <Button className="btn-primary px-4 py-2 text-sm">
-                  Ver detalles
-                </Button>
+                <Link to={`/events/${event.id}`}>
+                  <Button className="btn-primary px-4 py-2 text-sm">
+                    Ver detalles
+                  </Button>
+                </Link>
               </div>
             </div>
           </Card>

@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Courses from "./pages/Courses";
 import Events from "./pages/Events";
+import EventLanding from "./pages/EventLanding";
 import Calendar from "./pages/Calendar";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
