@@ -1,4 +1,3 @@
-
 import { NavLink, useLocation } from "react-router-dom"
 import { 
   Home, 
@@ -6,7 +5,10 @@ import {
   User, 
   Settings, 
   Calendar,
+  CalendarDays,
+  GraduationCap,
   Bell,
+  Heart,
   Star,
   Grid,
   Users
