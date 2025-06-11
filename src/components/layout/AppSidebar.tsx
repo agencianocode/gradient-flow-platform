@@ -38,9 +38,10 @@ const accountItems = [
 ]
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar()
+  const { state } = useSidebar()
   const location = useLocation()
   const currentPath = location.pathname
+  const collapsed = state === "collapsed"
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -70,7 +71,7 @@ export function AppSidebar() {
         bg-gradient-to-b from-sidebar-background to-sidebar-background/80
         backdrop-blur-lg
       `}
-      collapsible
+      collapsible="icon"
     >
       {/* Logo y trigger */}
       <div className="flex items-center justify-between p-4 border-b border-sidebar-border/50">
