@@ -12,6 +12,7 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import Favorites from "./pages/Favorites";
 import Settings from "./pages/Settings";
+import Community from "./pages/Community";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/courses" element={<Courses />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/community" element={<Community />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/favorites" element={<Favorites />} />
           <Route path="/settings" element={<Settings />} />

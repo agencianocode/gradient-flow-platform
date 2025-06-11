@@ -8,7 +8,8 @@ import {
   Calendar,
   Bell,
   Star,
-  Grid
+  Grid,
+  Users
 } from "lucide-react"
 
 import {
@@ -27,6 +28,7 @@ import {
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Mis Cursos", url: "/courses", icon: Book },
+  { title: "Comunidad", url: "/community", icon: Users },
   { title: "Calendario", url: "/calendar", icon: Calendar },
   { title: "Notificaciones", url: "/notifications", icon: Bell },
 ]
