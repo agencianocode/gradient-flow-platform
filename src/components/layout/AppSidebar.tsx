@@ -1,3 +1,4 @@
+
 import { NavLink, useLocation } from "react-router-dom"
 import { 
   Home, 
@@ -11,7 +12,8 @@ import {
   Heart,
   Star,
   Grid,
-  Users
+  Users,
+  FileText
 } from "lucide-react"
 
 import {
@@ -30,6 +32,8 @@ import {
 const navigationItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Mis Cursos", url: "/courses", icon: Book },
+  { title: "Eventos", url: "/events", icon: CalendarDays },
+  { title: "Blog", url: "/blog", icon: FileText },
   { title: "Comunidad", url: "/community", icon: Users },
   { title: "Calendario", url: "/calendar", icon: Calendar },
   { title: "Notificaciones", url: "/notifications", icon: Bell },
@@ -85,7 +89,7 @@ export function AppSidebar() {
               <Grid className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
-              NoCode
+              EduCommunity
             </span>
           </div>
         )}
