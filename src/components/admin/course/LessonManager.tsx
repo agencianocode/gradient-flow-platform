@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import { BookOpen, Plus } from 'lucide-react'
 import { useLessons } from '@/hooks/useLessons'
 import { LessonForm } from './LessonForm'
@@ -44,6 +43,13 @@ export function LessonManager({ courseId }: LessonManagerProps) {
     return `${hours}h ${remainingMinutes}m`
   }
 
+  const handleCreateLesson = async (data: any) => {
+    return await createLesson({
+      ...data,
+      nextOrderIndex: lessons.length + 1
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -54,8 +60,7 @@ export function LessonManager({ courseId }: LessonManagerProps) {
           </CardTitle>
           <LessonForm
             courseId={courseId}
-            onSubmit={createLesson}
-            nextOrderIndex={lessons.length + 1}
+            onSubmit={handleCreateLesson}
             trigger={
               <button className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2">
                 <Plus className="h-4 w-4 mr-2" />

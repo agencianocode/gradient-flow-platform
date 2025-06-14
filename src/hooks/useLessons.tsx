@@ -17,15 +17,18 @@ export interface Lesson {
   created_at: string
 }
 
-export interface CreateLessonData {
+export interface LessonFormData {
   title: string
   description?: string
   content_type: 'video' | 'text' | 'quiz' | 'assignment'
   video_url?: string
   content?: string
   duration_minutes: number
-  order_index: number
   is_preview?: boolean
+}
+
+export interface CreateLessonData extends LessonFormData {
+  order_index: number
 }
 
 export function useLessons(courseId: string) {
@@ -56,13 +59,14 @@ export function useLessons(courseId: string) {
     }
   }
 
-  const createLesson = async (lessonData: CreateLessonData) => {
+  const createLesson = async (lessonData: LessonFormData & { nextOrderIndex: number }): Promise<boolean> => {
     try {
       const { data, error } = await supabase
         .from('lessons')
         .insert({
           ...lessonData,
           course_id: courseId,
+          order_index: lessonData.nextOrderIndex,
         })
         .select()
         .single()
@@ -84,7 +88,7 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
-      return data
+      return true
     } catch (error: any) {
       console.error('Error creating lesson:', error)
       toast({
@@ -92,11 +96,11 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      throw error
+      return false
     }
   }
 
-  const updateLesson = async (lessonId: string, updates: Partial<CreateLessonData>) => {
+  const updateLesson = async (lessonId: string, updates: Partial<LessonFormData>): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('lessons')
@@ -120,6 +124,7 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
+      return true
     } catch (error: any) {
       console.error('Error updating lesson:', error)
       toast({
@@ -127,11 +132,11 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      throw error
+      return false
     }
   }
 
-  const deleteLesson = async (lessonId: string) => {
+  const deleteLesson = async (lessonId: string): Promise<boolean> => {
     try {
       const { error } = await supabase
         .from('lessons')
@@ -146,6 +151,7 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
+      return true
     } catch (error: any) {
       console.error('Error deleting lesson:', error)
       toast({
@@ -153,11 +159,11 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      throw error
+      return false
     }
   }
 
-  const reorderLessons = async (reorderedLessons: Lesson[]) => {
+  const reorderLessons = async (reorderedLessons: Lesson[]): Promise<boolean> => {
     try {
       // Update order_index for each lesson
       const updates = reorderedLessons.map((lesson, index) => ({
@@ -180,6 +186,7 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
+      return true
     } catch (error: any) {
       console.error('Error reordering lessons:', error)
       toast({
@@ -187,7 +194,7 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      throw error
+      return false
     }
   }
 
