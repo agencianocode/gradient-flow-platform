@@ -11,6 +11,7 @@ import Register from '@/pages/Register'
 import Profile from '@/pages/Profile'
 import Settings from '@/pages/Settings'
 import Courses from '@/pages/Courses'
+import CourseDetail from '@/pages/CourseDetail'
 import Events from '@/pages/Events'
 import EventLanding from '@/pages/EventLanding'
 import Community from '@/pages/Community'
@@ -37,6 +38,11 @@ function App() {
             <Route path="/courses" element={
               <ProtectedRoute>
                 <Courses />
+              </ProtectedRoute>
+            } />
+            <Route path="/course/:id" element={
+              <ProtectedRoute>
+                <CourseDetail />
               </ProtectedRoute>
             } />
             <Route path="/events" element={<Events />} />
