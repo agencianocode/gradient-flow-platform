@@ -24,7 +24,7 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
     title: "",
     description: "",
     category_id: "",
-    level: "beginner",
+    level: "beginner" as CourseLevel,
     price: 0,
     duration_hours: 0,
     thumbnail_url: "",
@@ -70,7 +70,7 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
         title: "",
         description: "",
         category_id: "",
-        level: "beginner",
+        level: "beginner" as CourseLevel,
         price: 0,
         duration_hours: 0,
         thumbnail_url: "",
@@ -142,7 +142,10 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="level">Nivel</Label>
-              <Select value={formData.level} onValueChange={(value: CourseLevel) => setFormData({...formData, level: value})}>
+              <Select 
+                value={formData.level} 
+                onValueChange={(value) => setFormData({...formData, level: value as CourseLevel})}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
