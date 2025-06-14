@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -34,7 +33,7 @@ export function AdminCoursesTab() {
     title: "",
     description: "",
     category_id: "",
-    level: "beginner" as const,
+    level: "beginner" as 'beginner' | 'intermediate' | 'advanced',
     price: 0,
     duration_hours: 0,
     thumbnail_url: "",
