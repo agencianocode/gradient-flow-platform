@@ -30,11 +30,25 @@ function App() {
       <ThemeProvider defaultTheme="light" storageKey="lovable-ui-theme">
         <BrowserRouter>
           <Routes>
+            {/* Rutas públicas */}
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/event/:id" element={<EventLanding />} />
+            <Route path="/blog" element={<Blog />} />
+            
+            {/* Rutas protegidas - una sola capa de protección */}
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
             <Route path="/courses" element={
               <ProtectedRoute>
                 <Courses />
@@ -45,14 +59,11 @@ function App() {
                 <CourseDetail />
               </ProtectedRoute>
             } />
-            <Route path="/events" element={<Events />} />
-            <Route path="/event/:id" element={<EventLanding />} />
             <Route path="/community" element={
               <ProtectedRoute>
                 <Community />
               </ProtectedRoute>
             } />
-            <Route path="/blog" element={<Blog />} />
             <Route path="/favorites" element={
               <ProtectedRoute>
                 <Favorites />
@@ -73,6 +84,8 @@ function App() {
                 <Admin />
               </ProtectedRoute>
             } />
+            
+            {/* Ruta 404 */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

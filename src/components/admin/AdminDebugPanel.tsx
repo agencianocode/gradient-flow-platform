@@ -3,12 +3,12 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { RefreshCw, User, Shield, Database, CheckCircle, XCircle } from 'lucide-react'
+import { RefreshCw, User, Shield, Database, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/integrations/supabase/client'
 
 export function AdminDebugPanel() {
-  const { user, profile, loading } = useAuth()
+  const { user, profile, loading, profileError, refreshProfile } = useAuth()
   const [checking, setChecking] = useState(false)
   const [debugInfo, setDebugInfo] = useState<any>(null)
 
@@ -106,7 +106,9 @@ export function AdminDebugPanel() {
     console.log('🔄 Refrescando autenticación...')
     try {
       await supabase.auth.refreshSession()
-      window.location.reload()
+      if (refreshProfile) {
+        await refreshProfile()
+      }
     } catch (error: any) {
       console.error('❌ Error refrescando sesión:', error)
     }
@@ -128,7 +130,10 @@ export function AdminDebugPanel() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 {loading ? (
-                  <Badge variant="secondary">Cargando...</Badge>
+                  <Badge variant="secondary">
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Cargando...
+                  </Badge>
                 ) : user ? (
                   <Badge variant="default" className="bg-green-100 text-green-800">
                     <CheckCircle className="h-3 w-3 mr-1" />
@@ -145,6 +150,12 @@ export function AdminDebugPanel() {
                 <p className="text-xs text-muted-foreground">
                   Email: {user.email}
                 </p>
+              )}
+              {profileError && (
+                <div className="flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 text-red-500" />
+                  <span className="text-xs text-red-600">Error de perfil</span>
+                </div>
               )}
             </div>
           </div>
@@ -165,8 +176,10 @@ export function AdminDebugPanel() {
                     {profile.full_name}
                   </p>
                 </div>
+              ) : profileError ? (
+                <Badge variant="destructive">Error en perfil</Badge>
               ) : (
-                <Badge variant="outline">Sin perfil</Badge>
+                <Badge variant="outline">Cargando perfil...</Badge>
               )}
             </div>
           </div>
@@ -219,7 +232,7 @@ export function AdminDebugPanel() {
         )}
 
         {/* Controles */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button 
             onClick={runDiagnostics} 
             disabled={checking}
@@ -247,6 +260,17 @@ export function AdminDebugPanel() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refrescar Sesión
           </Button>
+
+          {refreshProfile && (
+            <Button 
+              onClick={refreshProfile}
+              variant="outline"
+              size="sm"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Recargar Perfil
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

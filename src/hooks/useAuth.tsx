@@ -21,8 +21,11 @@ export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileError, setProfileError] = useState<string | null>(null)
   const { toast } = useToast()
   const initialized = useRef(false)
+  const retryCount = useRef(0)
+  const maxRetries = 3
 
   useEffect(() => {
     // Prevent multiple initializations
@@ -31,7 +34,27 @@ export function useAuth() {
 
     console.log('🔄 useAuth - Inicializando estado de autenticación')
     
-    // Get initial session
+    // Set up auth state listener FIRST
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 useAuth - Cambio de estado:', event, session ? 'Sesión activa' : 'Sin sesión')
+      
+      const newUser = session?.user ?? null
+      setUser(newUser)
+      
+      if (newUser) {
+        console.log('👤 useAuth - Usuario detectado, cargando perfil:', newUser.email)
+        await loadProfileWithRetry(newUser.id)
+      } else {
+        console.log('🚫 useAuth - No hay usuario, limpiando estado')
+        setProfile(null)
+        setProfileError(null)
+        setLoading(false)
+      }
+    })
+
+    // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
         console.error('❌ useAuth - Error obteniendo sesión:', error)
@@ -41,29 +64,15 @@ export function useAuth() {
       
       console.log('📋 useAuth - Sesión inicial:', session ? 'Activa' : 'Inactiva')
       if (session?.user) {
-        console.log('👤 useAuth - Usuario encontrado:', session.user.email)
+        console.log('👤 useAuth - Usuario encontrado en sesión inicial:', session.user.email)
       }
       
-      setUser(session?.user ?? null)
+      const initialUser = session?.user ?? null
+      setUser(initialUser)
       
-      if (session?.user) {
-        loadProfile(session.user.id)
+      if (initialUser) {
+        loadProfileWithRetry(initialUser.id)
       } else {
-        setLoading(false)
-      }
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 useAuth - Cambio de estado:', event, session ? 'Sesión activa' : 'Sin sesión')
-      setUser(session?.user ?? null)
-      
-      if (session?.user) {
-        await loadProfile(session.user.id)
-      } else {
-        setProfile(null)
         setLoading(false)
       }
     })
@@ -74,41 +83,37 @@ export function useAuth() {
     }
   }, [])
 
-  const loadProfile = async (userId: string) => {
+  const loadProfileWithRetry = async (userId: string) => {
+    console.log(`🔄 useAuth - Intento ${retryCount.current + 1}/${maxRetries} de cargar perfil para:`, userId)
+    
     try {
-      console.log('👥 useAuth - Cargando perfil para usuario:', userId)
+      const profile = await loadProfile(userId)
+      if (profile) {
+        setProfile(profile)
+        setProfileError(null)
+        retryCount.current = 0
+        console.log('✅ useAuth - Perfil cargado exitosamente')
+      } else {
+        throw new Error('Perfil no encontrado después de intentar crearlo')
+      }
+    } catch (error: any) {
+      console.error(`❌ useAuth - Error en intento ${retryCount.current + 1}:`, error)
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) {
-        console.error('❌ useAuth - Error cargando perfil:', error)
-        
-        // Si el perfil no existe, intentar crearlo
-        if (error.code === 'PGRST116') {
-          console.log('👥 useAuth - Perfil no encontrado, intentando crear...')
-          await createProfile(userId)
-          return
-        }
-        
-        throw error
+      if (retryCount.current < maxRetries - 1) {
+        retryCount.current++
+        console.log(`🔄 useAuth - Reintentando en 1 segundo...`)
+        setTimeout(() => {
+          loadProfileWithRetry(userId)
+        }, 1000)
+        return
       }
       
-      console.log('✅ useAuth - Perfil cargado:', {
-        id: data.id,
-        email: data.email,
-        user_type: data.user_type,
-        full_name: data.full_name
-      })
-      setProfile(data)
-    } catch (error: any) {
-      console.error('❌ useAuth - Error en loadProfile:', error)
+      // Después de todos los reintentos fallidos
+      console.error('❌ useAuth - Todos los reintentos fallaron')
+      setProfileError(error.message)
       toast({
-        title: "Error al cargar perfil",
-        description: "No se pudo cargar la información del perfil. Intenta refrescar la página.",
+        title: "Error de perfil",
+        description: "No se pudo cargar el perfil de usuario. Intenta refrescar la página.",
         variant: "destructive",
       })
     } finally {
@@ -116,21 +121,60 @@ export function useAuth() {
     }
   }
 
-  const createProfile = async (userId: string) => {
+  const loadProfile = async (userId: string): Promise<Profile | null> => {
+    console.log('👥 useAuth - Consultando perfil en base de datos para:', userId)
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+
+    if (error) {
+      console.error('❌ useAuth - Error consultando perfil:', error)
+      
+      // Si el perfil no existe, intentar crearlo
+      if (error.code === 'PGRST116') {
+        console.log('👥 useAuth - Perfil no encontrado, intentando crear...')
+        return await createProfile(userId)
+      }
+      
+      throw error
+    }
+    
+    console.log('✅ useAuth - Perfil encontrado:', {
+      id: data.id,
+      email: data.email,
+      user_type: data.user_type,
+      full_name: data.full_name
+    })
+    
+    return data
+  }
+
+  const createProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      console.log('👥 useAuth - Creando perfil para usuario:', userId)
+      console.log('👥 useAuth - Creando perfil automáticamente para:', userId)
       
       const { data: userData } = await supabase.auth.getUser()
       const user = userData.user
       
+      if (!user) {
+        throw new Error('No se pudo obtener datos del usuario para crear perfil')
+      }
+
+      const newProfile = {
+        id: userId,
+        email: user.email || '',
+        full_name: user.user_metadata?.full_name || user.user_metadata?.name || 'Usuario',
+        user_type: 'student' as const
+      }
+
+      console.log('👥 useAuth - Datos para nuevo perfil:', newProfile)
+      
       const { data, error } = await supabase
         .from('profiles')
-        .insert({
-          id: userId,
-          email: user?.email || '',
-          full_name: user?.user_metadata?.full_name || 'Usuario',
-          user_type: 'student'
-        })
+        .insert(newProfile)
         .select()
         .single()
 
@@ -139,15 +183,11 @@ export function useAuth() {
         throw error
       }
 
-      console.log('✅ useAuth - Perfil creado:', data)
-      setProfile(data)
+      console.log('✅ useAuth - Perfil creado exitosamente:', data)
+      return data
     } catch (error: any) {
       console.error('❌ useAuth - Error en createProfile:', error)
-      toast({
-        title: "Error creando perfil",
-        description: "No se pudo crear el perfil de usuario.",
-        variant: "destructive",
-      })
+      throw error
     }
   }
 
@@ -219,6 +259,12 @@ export function useAuth() {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
 
+      // Limpiar estado local
+      setUser(null)
+      setProfile(null)
+      setProfileError(null)
+      retryCount.current = 0
+
       toast({
         title: "Sesión cerrada",
         description: "Has cerrado sesión correctamente.",
@@ -247,7 +293,7 @@ export function useAuth() {
       if (error) throw error
 
       // Refresh profile
-      await loadProfile(user.id)
+      await loadProfileWithRetry(user.id)
 
       toast({
         title: "Perfil actualizado",
@@ -266,13 +312,23 @@ export function useAuth() {
     }
   }
 
+  const refreshProfile = async () => {
+    if (!user) return
+    console.log('🔄 useAuth - Refrescando perfil manualmente')
+    setLoading(true)
+    retryCount.current = 0
+    await loadProfileWithRetry(user.id)
+  }
+
   return {
     user,
     profile,
     loading,
+    profileError,
     signUp,
     signIn,
     signOut,
     updateProfile,
+    refreshProfile,
   }
 }
