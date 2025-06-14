@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -59,7 +58,7 @@ export function CourseFileManager({ courseId, instructorId }: CourseFileManagerP
             .filter(file => file.name !== '.emptyFolderPlaceholder')
             .map(file => ({
               name: file.name,
-              url: `${supabase.supabaseUrl}/storage/v1/object/public/${bucket}/${instructorId}/courses/${courseId}/${file.name}`,
+              url: `https://mopzwfrbqbtrpcqnyzad.supabase.co/storage/v1/object/public/${bucket}/${instructorId}/courses/${courseId}/${file.name}`,
               size: file.metadata?.size || 0,
               type: file.metadata?.mimetype || 'unknown',
               bucket,
