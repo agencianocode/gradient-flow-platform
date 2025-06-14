@@ -1,205 +1,158 @@
 
 import { useState } from "react"
-import { Link } from "react-router-dom"
-import { Eye, EyeOff, Mail, Lock, User, Github, Chrome } from "lucide-react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
+import { Eye, EyeOff } from "lucide-react"
 
-export default function Register() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+const Register = () => {
   const [formData, setFormData] = useState({
-    name: "",
+    fullName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   })
-  const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // Simular registro
-    setTimeout(() => setIsLoading(false), 1500)
+    
+    if (formData.password !== formData.confirmPassword) {
+      return
+    }
+
+    setLoading(true)
+
+    const result = await signUp(formData.email, formData.password, formData.fullName)
+    
+    if (result.success) {
+      navigate("/login")
+    }
+    
+    setLoading(false)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-900 via-pink-900 to-purple-900 relative overflow-hidden">
-      {/* Animated background particles */}
-      <div className="absolute inset-0 bg-floating-particles opacity-30"></div>
-      
-      {/* Floating orbs */}
-      <div className="absolute top-10 right-10 w-80 h-80 bg-orange-500/20 rounded-full blur-3xl animate-float"></div>
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-float" style={{animationDelay: '3s'}}></div>
-      
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
-        <Card className="w-full max-w-md p-8 bg-white/10 backdrop-blur-lg border border-white/20 shadow-2xl rounded-2xl">
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <span className="text-2xl font-bold text-white">E</span>
-            </div>
-            <h1 className="text-3xl font-bold text-white mb-2">Únete a EduCommunity</h1>
-            <p className="text-white/70">Crea tu cuenta y comienza a aprender</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-white/50" />
-              </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-blue-50 to-cyan-50 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Crear Cuenta
+          </CardTitle>
+          <CardDescription className="text-center">
+            Únete a nuestra comunidad de aprendizaje
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Nombre completo</Label>
               <Input
+                id="fullName"
+                name="fullName"
                 type="text"
-                placeholder="Nombre completo"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-orange-400 focus:ring-orange-400/30 focus:ring-4 transition-all duration-300"
+                placeholder="Tu nombre completo"
+                value={formData.fullName}
+                onChange={handleChange}
                 required
               />
-              <label className={`absolute left-10 transition-all duration-300 pointer-events-none ${
-                formData.name ? 'top-0 text-xs text-orange-300 bg-white/10 px-2 rounded' : 'top-1/2 -translate-y-1/2 text-white/50'
-              }`}>
-                {formData.name && 'Nombre completo'}
-              </label>
             </div>
 
-            {/* Email Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-white/50" />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
               <Input
+                id="email"
+                name="email"
                 type="email"
-                placeholder="Correo electrónico"
+                placeholder="tu@email.com"
                 value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-orange-400 focus:ring-orange-400/30 focus:ring-4 transition-all duration-300"
+                onChange={handleChange}
                 required
               />
-              <label className={`absolute left-10 transition-all duration-300 pointer-events-none ${
-                formData.email ? 'top-0 text-xs text-orange-300 bg-white/10 px-2 rounded' : 'top-1/2 -translate-y-1/2 text-white/50'
-              }`}>
-                {formData.email && 'Correo electrónico'}
-              </label>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Mínimo 6 caracteres"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={6}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
 
-            {/* Password Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/50" />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
               <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Contraseña"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-orange-400 focus:ring-orange-400/30 focus:ring-4 transition-all duration-300"
-                required
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-white/50 hover:text-white transition-colors" />
-                ) : (
-                  <Eye className="h-5 w-5 text-white/50 hover:text-white transition-colors" />
-                )}
-              </button>
-              <label className={`absolute left-10 transition-all duration-300 pointer-events-none ${
-                formData.password ? 'top-0 text-xs text-orange-300 bg-white/10 px-2 rounded' : 'top-1/2 -translate-y-1/2 text-white/50'
-              }`}>
-                {formData.password && 'Contraseña'}
-              </label>
-            </div>
-
-            {/* Confirm Password Input */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-white/50" />
-              </div>
-              <Input
-                type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirmar contraseña"
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="Repite tu contraseña"
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                className="pl-10 pr-10 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-orange-400 focus:ring-orange-400/30 focus:ring-4 transition-all duration-300"
+                onChange={handleChange}
                 required
               />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-5 w-5 text-white/50 hover:text-white transition-colors" />
-                ) : (
-                  <Eye className="h-5 w-5 text-white/50 hover:text-white transition-colors" />
-                )}
-              </button>
-              <label className={`absolute left-10 transition-all duration-300 pointer-events-none ${
-                formData.confirmPassword ? 'top-0 text-xs text-orange-300 bg-white/10 px-2 rounded' : 'top-1/2 -translate-y-1/2 text-white/50'
-              }`}>
-                {formData.confirmPassword && 'Confirmar contraseña'}
-              </label>
+              {formData.password !== formData.confirmPassword && formData.confirmPassword && (
+                <p className="text-sm text-destructive">Las contraseñas no coinciden</p>
+              )}
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-secondary hover:opacity-90 text-white font-semibold py-3 rounded-xl shadow-lg hover:shadow-glow hover:-translate-y-1 transition-all duration-300 disabled:opacity-50"
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loading || formData.password !== formData.confirmPassword}
             >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-              ) : (
-                'Crear Cuenta'
-              )}
+              {loading ? "Creando cuenta..." : "Crear Cuenta"}
             </Button>
           </form>
 
-          {/* OAuth Buttons */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/20"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-transparent text-white/70">O regístrate con</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <Github className="w-5 h-5 mr-2" />
-                Github
-              </Button>
-              <Button
-                variant="outline"
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all duration-300"
-              >
-                <Chrome className="w-5 h-5 mr-2" />
-                Google
-              </Button>
-            </div>
-          </div>
-
-          <p className="mt-8 text-center text-white/70">
-            ¿Ya tienes una cuenta?{' '}
-            <Link to="/login" className="text-orange-300 hover:text-orange-200 font-semibold transition-colors">
+          <div className="mt-6 text-center text-sm">
+            <span className="text-muted-foreground">
+              ¿Ya tienes una cuenta?{" "}
+            </span>
+            <Link 
+              to="/login" 
+              className="text-primary hover:text-primary/80 font-medium"
+            >
               Inicia sesión aquí
             </Link>
-          </p>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
+
+export default Register
