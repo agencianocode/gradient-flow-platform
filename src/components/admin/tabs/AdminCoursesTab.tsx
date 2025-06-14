@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -19,6 +20,8 @@ interface Category {
   color: string
 }
 
+type CourseLevel = 'beginner' | 'intermediate' | 'advanced'
+
 export function AdminCoursesTab() {
   const [courses, setCourses] = useState<Course[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -33,7 +36,7 @@ export function AdminCoursesTab() {
     title: "",
     description: "",
     category_id: "",
-    level: "beginner" as 'beginner' | 'intermediate' | 'advanced',
+    level: "beginner" as CourseLevel,
     price: 0,
     duration_hours: 0,
     thumbnail_url: "",
@@ -258,7 +261,7 @@ export function AdminCoursesTab() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="level">Nivel</Label>
-                    <Select value={formData.level} onValueChange={(value: 'beginner' | 'intermediate' | 'advanced') => setFormData({...formData, level: value})}>
+                    <Select value={formData.level} onValueChange={(value: CourseLevel) => setFormData({...formData, level: value})}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
