@@ -65,10 +65,21 @@ export function useEvents() {
 
       if (error) throw error
 
-      // Update current attendees count
-      const { error: updateError } = await supabase.rpc('increment_event_attendees', {
-        event_id: eventId
-      })
+      // Update current attendees count manually
+      const { data: currentEvent, error: fetchError } = await supabase
+        .from('events')
+        .select('current_attendees')
+        .eq('id', eventId)
+        .single()
+
+      if (fetchError) throw fetchError
+
+      const { error: updateError } = await supabase
+        .from('events')
+        .update({ 
+          current_attendees: (currentEvent?.current_attendees || 0) + 1 
+        })
+        .eq('id', eventId)
 
       if (updateError) throw updateError
 
