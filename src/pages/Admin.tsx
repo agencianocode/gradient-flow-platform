@@ -68,6 +68,9 @@ const Admin = () => {
               <p className="text-muted-foreground">
                 No tienes permisos para acceder al panel de administración.
               </p>
+              <p className="text-xs text-muted-foreground mt-2">
+                Tipo de usuario actual: {profile.user_type}
+              </p>
             </CardContent>
           </Card>
         </div>

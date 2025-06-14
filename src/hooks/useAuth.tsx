@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { User } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -22,9 +22,14 @@ export function useAuth() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const initialized = useRef(false)
 
   useEffect(() => {
-    console.log('useAuth - Initializing auth state')
+    // Prevent multiple initializations
+    if (initialized.current) return
+    initialized.current = true
+
+    console.log('useAuth - Initializing auth state (single time)')
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
@@ -59,7 +64,10 @@ export function useAuth() {
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      initialized.current = false
+    }
   }, [])
 
   const loadProfile = async (userId: string) => {

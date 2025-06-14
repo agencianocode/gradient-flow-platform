@@ -48,7 +48,6 @@ export function Header() {
           >
             <Link to="/notifications">
               <Bell className="h-5 w-5" />
-              {/* TODO: Connect to real notifications count */}
               <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
                 3
               </Badge>
@@ -99,6 +98,16 @@ export function Header() {
                     <span>Configuración</span>
                   </Link>
                 </DropdownMenuItem>
+                {profile?.user_type === 'admin' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer" asChild>
+                      <Link to="/admin">
+                        <span>Panel Admin</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="cursor-pointer text-red-600"
@@ -112,6 +121,9 @@ export function Header() {
             <div className="flex gap-2">
               <Button variant="ghost" asChild>
                 <Link to="/login">Iniciar Sesión</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Registrarse</Link>
               </Button>
             </div>
           )}
