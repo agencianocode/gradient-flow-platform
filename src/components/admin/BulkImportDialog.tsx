@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Upload, Download, AlertCircle, CheckCircle, XCircle } from 'lucide-react'
+import { Upload, Download, AlertCircle, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { useBulkImport, type ImportResult } from '@/hooks/useBulkImport'
 
 interface BulkImportDialogProps {
@@ -194,7 +194,7 @@ export function BulkImportDialog({ trigger }: BulkImportDialogProps) {
               <Checkbox
                 id="updateExisting"
                 checked={updateExisting}
-                onCheckedChange={setUpdateExisting}
+                onCheckedChange={(checked) => setUpdateExisting(checked === true)}
               />
               <label htmlFor="updateExisting" className="text-sm">
                 Actualizar registros existentes (requiere ID)
@@ -204,7 +204,7 @@ export function BulkImportDialog({ trigger }: BulkImportDialogProps) {
               <Checkbox
                 id="skipErrors"
                 checked={skipErrors}
-                onCheckedChange={setSkipErrors}
+                onCheckedChange={(checked) => setSkipErrors(checked === true)}
               />
               <label htmlFor="skipErrors" className="text-sm">
                 Continuar aunque haya errores
@@ -287,10 +287,18 @@ export function BulkImportDialog({ trigger }: BulkImportDialogProps) {
             <Button
               onClick={handleImport}
               disabled={!csvData || !importType || loading || validationErrors.length > 0}
-              loading={loading}
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Importar Datos
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Importando...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Importar Datos
+                </>
+              )}
             </Button>
           </div>
         </div>

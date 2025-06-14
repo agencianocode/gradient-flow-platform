@@ -29,17 +29,21 @@ export function useAuth() {
     if (initialized.current) return
     initialized.current = true
 
-    console.log('useAuth - Initializing auth state (single time)')
+    console.log('🔄 useAuth - Inicializando estado de autenticación')
     
     // Get initial session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error('useAuth - Error getting session:', error)
+        console.error('❌ useAuth - Error obteniendo sesión:', error)
         setLoading(false)
         return
       }
       
-      console.log('useAuth - Initial session:', session)
+      console.log('📋 useAuth - Sesión inicial:', session ? 'Activa' : 'Inactiva')
+      if (session?.user) {
+        console.log('👤 useAuth - Usuario encontrado:', session.user.email)
+      }
+      
       setUser(session?.user ?? null)
       
       if (session?.user) {
@@ -53,7 +57,7 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('useAuth - Auth state changed:', event, session)
+      console.log('🔄 useAuth - Cambio de estado:', event, session ? 'Sesión activa' : 'Sin sesión')
       setUser(session?.user ?? null)
       
       if (session?.user) {
@@ -72,7 +76,7 @@ export function useAuth() {
 
   const loadProfile = async (userId: string) => {
     try {
-      console.log('useAuth - Loading profile for user:', userId)
+      console.log('👥 useAuth - Cargando perfil para usuario:', userId)
       
       const { data, error } = await supabase
         .from('profiles')
@@ -81,17 +85,30 @@ export function useAuth() {
         .single()
 
       if (error) {
-        console.error('useAuth - Error loading profile:', error)
+        console.error('❌ useAuth - Error cargando perfil:', error)
+        
+        // Si el perfil no existe, intentar crearlo
+        if (error.code === 'PGRST116') {
+          console.log('👥 useAuth - Perfil no encontrado, intentando crear...')
+          await createProfile(userId)
+          return
+        }
+        
         throw error
       }
       
-      console.log('useAuth - Profile loaded:', data)
+      console.log('✅ useAuth - Perfil cargado:', {
+        id: data.id,
+        email: data.email,
+        user_type: data.user_type,
+        full_name: data.full_name
+      })
       setProfile(data)
-    } catch (error) {
-      console.error('useAuth - Error in loadProfile:', error)
+    } catch (error: any) {
+      console.error('❌ useAuth - Error en loadProfile:', error)
       toast({
         title: "Error al cargar perfil",
-        description: "No se pudo cargar la información del perfil.",
+        description: "No se pudo cargar la información del perfil. Intenta refrescar la página.",
         variant: "destructive",
       })
     } finally {
@@ -99,9 +116,44 @@ export function useAuth() {
     }
   }
 
+  const createProfile = async (userId: string) => {
+    try {
+      console.log('👥 useAuth - Creando perfil para usuario:', userId)
+      
+      const { data: userData } = await supabase.auth.getUser()
+      const user = userData.user
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: user?.email || '',
+          full_name: user?.user_metadata?.full_name || 'Usuario',
+          user_type: 'student'
+        })
+        .select()
+        .single()
+
+      if (error) {
+        console.error('❌ useAuth - Error creando perfil:', error)
+        throw error
+      }
+
+      console.log('✅ useAuth - Perfil creado:', data)
+      setProfile(data)
+    } catch (error: any) {
+      console.error('❌ useAuth - Error en createProfile:', error)
+      toast({
+        title: "Error creando perfil",
+        description: "No se pudo crear el perfil de usuario.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      console.log('useAuth - Attempting sign up for:', email)
+      console.log('📝 useAuth - Intentando registro para:', email)
       
       const { error } = await supabase.auth.signUp({
         email,
@@ -122,7 +174,7 @@ export function useAuth() {
       
       return { success: true }
     } catch (error: any) {
-      console.error('useAuth - Sign up error:', error)
+      console.error('❌ useAuth - Error en registro:', error)
       toast({
         title: "Error en el registro",
         description: error.message,
@@ -134,7 +186,7 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('useAuth - Attempting sign in for:', email)
+      console.log('🔑 useAuth - Intentando login para:', email)
       
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -150,7 +202,7 @@ export function useAuth() {
 
       return { success: true }
     } catch (error: any) {
-      console.error('useAuth - Sign in error:', error)
+      console.error('❌ useAuth - Error en login:', error)
       toast({
         title: "Error al iniciar sesión",
         description: error.message,
@@ -162,7 +214,7 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
-      console.log('useAuth - Attempting sign out')
+      console.log('🚪 useAuth - Cerrando sesión')
       
       const { error } = await supabase.auth.signOut()
       if (error) throw error
@@ -172,7 +224,7 @@ export function useAuth() {
         description: "Has cerrado sesión correctamente.",
       })
     } catch (error: any) {
-      console.error('useAuth - Sign out error:', error)
+      console.error('❌ useAuth - Error cerrando sesión:', error)
       toast({
         title: "Error al cerrar sesión",
         description: error.message,
@@ -185,7 +237,7 @@ export function useAuth() {
     if (!user) return { success: false, error: 'No user logged in' }
 
     try {
-      console.log('useAuth - Updating profile:', updates)
+      console.log('✏️ useAuth - Actualizando perfil:', updates)
       
       const { error } = await supabase
         .from('profiles')
@@ -204,7 +256,7 @@ export function useAuth() {
 
       return { success: true }
     } catch (error: any) {
-      console.error('useAuth - Update profile error:', error)
+      console.error('❌ useAuth - Error actualizando perfil:', error)
       toast({
         title: "Error al actualizar perfil",
         description: error.message,

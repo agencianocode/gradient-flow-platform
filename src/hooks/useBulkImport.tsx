@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -68,10 +69,10 @@ export function useBulkImport() {
       const row: any = {}
       
       headers.forEach((header, index) => {
-        let value = values[index] || ''
+        let value: any = values[index] || ''
         
         // Try to parse as JSON for arrays
-        if (value.startsWith('[') && value.endsWith(']')) {
+        if (typeof value === 'string' && value.startsWith('[') && value.endsWith(']')) {
           try {
             value = JSON.parse(value)
           } catch {
@@ -80,7 +81,7 @@ export function useBulkImport() {
         }
         
         // Convert numeric strings to numbers
-        if (!isNaN(Number(value)) && value !== '') {
+        if (typeof value === 'string' && !isNaN(Number(value)) && value !== '') {
           value = Number(value)
         }
         
