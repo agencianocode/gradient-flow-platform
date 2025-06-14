@@ -24,9 +24,19 @@ export function useAuth() {
   const { toast } = useToast()
 
   useEffect(() => {
+    console.log('useAuth - Initializing auth state')
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('useAuth - Error getting session:', error)
+        setLoading(false)
+        return
+      }
+      
+      console.log('useAuth - Initial session:', session)
       setUser(session?.user ?? null)
+      
       if (session?.user) {
         loadProfile(session.user.id)
       } else {
@@ -38,7 +48,9 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('useAuth - Auth state changed:', event, session)
       setUser(session?.user ?? null)
+      
       if (session?.user) {
         await loadProfile(session.user.id)
       } else {
@@ -52,16 +64,28 @@ export function useAuth() {
 
   const loadProfile = async (userId: string) => {
     try {
+      console.log('useAuth - Loading profile for user:', userId)
+      
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('useAuth - Error loading profile:', error)
+        throw error
+      }
+      
+      console.log('useAuth - Profile loaded:', data)
       setProfile(data)
     } catch (error) {
-      console.error('Error loading profile:', error)
+      console.error('useAuth - Error in loadProfile:', error)
+      toast({
+        title: "Error al cargar perfil",
+        description: "No se pudo cargar la información del perfil.",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
@@ -69,6 +93,8 @@ export function useAuth() {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
+      console.log('useAuth - Attempting sign up for:', email)
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -88,6 +114,7 @@ export function useAuth() {
       
       return { success: true }
     } catch (error: any) {
+      console.error('useAuth - Sign up error:', error)
       toast({
         title: "Error en el registro",
         description: error.message,
@@ -99,6 +126,8 @@ export function useAuth() {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('useAuth - Attempting sign in for:', email)
+      
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -113,6 +142,7 @@ export function useAuth() {
 
       return { success: true }
     } catch (error: any) {
+      console.error('useAuth - Sign in error:', error)
       toast({
         title: "Error al iniciar sesión",
         description: error.message,
@@ -124,6 +154,8 @@ export function useAuth() {
 
   const signOut = async () => {
     try {
+      console.log('useAuth - Attempting sign out')
+      
       const { error } = await supabase.auth.signOut()
       if (error) throw error
 
@@ -132,6 +164,7 @@ export function useAuth() {
         description: "Has cerrado sesión correctamente.",
       })
     } catch (error: any) {
+      console.error('useAuth - Sign out error:', error)
       toast({
         title: "Error al cerrar sesión",
         description: error.message,
@@ -144,6 +177,8 @@ export function useAuth() {
     if (!user) return { success: false, error: 'No user logged in' }
 
     try {
+      console.log('useAuth - Updating profile:', updates)
+      
       const { error } = await supabase
         .from('profiles')
         .update(updates)
@@ -161,6 +196,7 @@ export function useAuth() {
 
       return { success: true }
     } catch (error: any) {
+      console.error('useAuth - Update profile error:', error)
       toast({
         title: "Error al actualizar perfil",
         description: error.message,

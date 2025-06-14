@@ -5,24 +5,77 @@ import { AdminTabs } from "@/components/admin/AdminTabs"
 import { useAuth } from "@/hooks/useAuth"
 import { Navigate } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
-import { AlertTriangle } from "lucide-react"
+import { AlertTriangle, Loader2 } from "lucide-react"
+import { useEffect } from "react"
 
 const Admin = () => {
-  const { profile, loading } = useAuth()
+  const { profile, loading, user } = useAuth()
+
+  useEffect(() => {
+    console.log('Admin page - Loading:', loading)
+    console.log('Admin page - User:', user)
+    console.log('Admin page - Profile:', profile)
+    console.log('Admin page - User type:', profile?.user_type)
+  }, [loading, user, profile])
 
   if (loading) {
+    console.log('Admin page - Showing loading state')
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600"></div>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+            <p className="text-muted-foreground">Cargando panel de administración...</p>
+          </div>
         </div>
       </Layout>
     )
   }
 
-  if (!profile || profile.user_type !== 'admin') {
-    return <Navigate to="/" replace />
+  if (!user) {
+    console.log('Admin page - No user, redirecting to login')
+    return <Navigate to="/login" replace />
   }
+
+  if (!profile) {
+    console.log('Admin page - No profile data')
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Card className="max-w-md">
+            <CardContent className="p-6 text-center">
+              <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+              <h2 className="text-lg font-semibold mb-2">Error al cargar el perfil</h2>
+              <p className="text-muted-foreground">
+                No se pudo cargar la información del perfil. Intenta recargar la página.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    )
+  }
+
+  if (profile.user_type !== 'admin') {
+    console.log('Admin page - User is not admin, user_type:', profile.user_type)
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <Card className="max-w-md">
+            <CardContent className="p-6 text-center">
+              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h2 className="text-lg font-semibold mb-2">Acceso Denegado</h2>
+              <p className="text-muted-foreground">
+                No tienes permisos para acceder al panel de administración.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    )
+  }
+
+  console.log('Admin page - Rendering admin dashboard')
 
   return (
     <Layout>

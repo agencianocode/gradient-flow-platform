@@ -1,5 +1,5 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,20 +13,37 @@ const Login = () => {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { signIn } = useAuth()
+  const { signIn, user } = useAuth()
   const navigate = useNavigate()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      console.log('Login - User already authenticated, redirecting to home')
+      navigate("/")
+    }
+  }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
+    console.log('Login - Attempting login for:', email)
     const result = await signIn(email, password)
     
     if (result.success) {
+      console.log('Login - Success, navigating to home')
       navigate("/")
+    } else {
+      console.log('Login - Failed:', result.error)
     }
     
     setLoading(false)
+  }
+
+  // Don't render if user is already authenticated
+  if (user) {
+    return null
   }
 
   return (
