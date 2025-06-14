@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
@@ -51,6 +50,24 @@ export function useEvents() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getEventById = async (id: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select(`
+          *,
+          instructor:profiles!instructor_id(full_name, avatar_url)
+        `)
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error: any) {
+      return { data: null, error: error.message }
     }
   }
 
@@ -108,6 +125,7 @@ export function useEvents() {
     events,
     loading,
     fetchEvents,
+    getEventById,
     registerForEvent,
   }
 }
