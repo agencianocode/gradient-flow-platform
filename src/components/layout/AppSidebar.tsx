@@ -1,121 +1,133 @@
 
-import { NavLink, useLocation } from "react-router-dom"
 import { 
-  Home, 
-  Book, 
-  User, 
-  Settings, 
-  Calendar,
-  CalendarDays,
-  GraduationCap,
-  Bell,
-  Heart,
-  Star,
-  Grid,
-  Users,
-  FileText
-} from "lucide-react"
-
-import {
-  Sidebar,
-  SidebarContent,
+  Sidebar, 
+  SidebarContent, 
+  SidebarHeader, 
+  SidebarMenu, 
+  SidebarMenuButton, 
+  SidebarMenuItem, 
+  SidebarFooter,
+  SidebarRail,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
+  SidebarGroupContent
 } from "@/components/ui/sidebar"
+import { 
+  BookOpen, 
+  Calendar, 
+  MessageSquare, 
+  Home, 
+  User, 
+  Settings,
+  Heart,
+  Bell,
+  FileText,
+  CalendarDays,
+  Shield
+} from "lucide-react"
+import { Link, useLocation } from "react-router-dom"
+import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
 
-const navigationItems = [
-  { title: "Dashboard", url: "/", icon: Home },
-  { title: "Mis Cursos", url: "/courses", icon: Book },
-  { title: "Eventos", url: "/events", icon: CalendarDays },
-  { title: "Blog", url: "/blog", icon: FileText },
-  { title: "Comunidad", url: "/community", icon: Users },
-  { title: "Calendario", url: "/calendar", icon: Calendar },
-  { title: "Notificaciones", url: "/notifications", icon: Bell },
+const mainItems = [
+  {
+    title: "Inicio",
+    url: "/",
+    icon: Home,
+  },
+  {
+    title: "Cursos",
+    url: "/courses",
+    icon: BookOpen,
+  },
+  {
+    title: "Eventos",
+    url: "/events",
+    icon: Calendar,
+  },
+  {
+    title: "Comunidad",
+    url: "/community",
+    icon: MessageSquare,
+  },
+  {
+    title: "Blog",
+    url: "/blog",
+    icon: FileText,
+  },
 ]
 
-const accountItems = [
-  { title: "Perfil", url: "/profile", icon: User },
-  { title: "Favoritos", url: "/favorites", icon: Star },
-  { title: "Configuración", url: "/settings", icon: Settings },
+const personalItems = [
+  {
+    title: "Favoritos",
+    url: "/favorites",
+    icon: Heart,
+  },
+  {
+    title: "Notificaciones",
+    url: "/notifications",
+    icon: Bell,
+  },
+  {
+    title: "Calendario",
+    url: "/calendar",
+    icon: CalendarDays,
+  },
+  {
+    title: "Perfil",
+    url: "/profile",
+    icon: User,
+  },
+  {
+    title: "Configuración",
+    url: "/settings",
+    icon: Settings,
+  },
 ]
 
 export function AppSidebar() {
-  const { state } = useSidebar()
   const location = useLocation()
-  const currentPath = location.pathname
-  const collapsed = state === "collapsed"
-
-  const isActive = (path: string) => {
-    if (path === "/") {
-      return currentPath === "/"
-    }
-    return currentPath.startsWith(path)
-  }
-
-  const getNavClassName = (path: string) => {
-    const active = isActive(path)
-    return `
-      group relative flex items-center px-3 py-2.5 rounded-xl transition-all duration-300
-      ${active 
-        ? 'bg-gradient-primary text-white shadow-lg shadow-purple-500/25' 
-        : 'text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
-      }
-      ${!collapsed ? 'justify-start' : 'justify-center'}
-    `
-  }
+  const { profile } = useAuth()
 
   return (
-    <Sidebar
-      className={`
-        ${collapsed ? 'w-16' : 'w-64'} 
-        transition-all duration-300 ease-in-out
-        border-r border-sidebar-border/50
-        bg-gradient-to-b from-sidebar-background to-sidebar-background/80
-        backdrop-blur-lg
-      `}
-      collapsible="icon"
-    >
-      {/* Logo y trigger */}
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border/50">
-        {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <Grid className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg bg-gradient-primary bg-clip-text text-transparent">
-              EduCommunity
-            </span>
-          </div>
-        )}
-        <SidebarTrigger className="ml-auto" />
-      </div>
-
-      <SidebarContent className="px-3 py-4">
-        {/* Navegación principal */}
+    <Sidebar collapsible="icon" className="border-r bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <SidebarHeader className="border-b">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <Link to="/" className="flex items-center gap-2">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-sidebar-primary-foreground">
+                  <BookOpen className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">Learning Platform</span>
+                  <span className="truncate text-xs">Academia Online</span>
+                </div>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
+      
+      <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className={`${collapsed ? 'sr-only' : ''} text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2`}>
-            Navegación
-          </SidebarGroupLabel>
+          <SidebarGroupLabel>Principal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {navigationItems.map((item) => (
+            <SidebarMenu>
+              {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="p-0">
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
-                      <item.icon className={`${collapsed ? 'w-5 h-5' : 'w-5 h-5 mr-3'} flex-shrink-0`} />
-                      {!collapsed && (
-                        <span className="font-medium truncate">{item.title}</span>
-                      )}
-                      {isActive(item.url) && (
-                        <div className="absolute inset-0 bg-gradient-primary rounded-xl opacity-10" />
-                      )}
-                    </NavLink>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                    className={cn(
+                      "hover:bg-accent hover:text-accent-foreground",
+                      location.pathname === item.url && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Link to={item.url} className="flex items-center gap-2">
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -123,25 +135,24 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Cuenta */}
-        <SidebarGroup className="mt-8">
-          <SidebarGroupLabel className={`${collapsed ? 'sr-only' : ''} text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2`}>
-            Cuenta
-          </SidebarGroupLabel>
+        <SidebarGroup>
+          <SidebarGroupLabel>Personal</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
-              {accountItems.map((item) => (
+            <SidebarMenu>
+              {personalItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild className="p-0">
-                    <NavLink to={item.url} className={getNavClassName(item.url)}>
-                      <item.icon className={`${collapsed ? 'w-5 h-5' : 'w-5 h-5 mr-3'} flex-shrink-0`} />
-                      {!collapsed && (
-                        <span className="font-medium truncate">{item.title}</span>
-                      )}
-                      {isActive(item.url) && (
-                        <div className="absolute inset-0 bg-gradient-primary rounded-xl opacity-10" />
-                      )}
-                    </NavLink>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                    className={cn(
+                      "hover:bg-accent hover:text-accent-foreground",
+                      location.pathname === item.url && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Link to={item.url} className="flex items-center gap-2">
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -149,21 +160,43 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Progreso del usuario (solo visible cuando no está colapsado) */}
-        {!collapsed && (
-          <div className="mt-8 p-4 bg-gradient-secondary/10 rounded-xl border border-orange-200/20">
-            <div className="text-sm font-semibold text-foreground mb-2">
-              Progreso Mensual
-            </div>
-            <div className="w-full bg-muted rounded-full h-2 mb-2">
-              <div className="bg-gradient-secondary h-2 rounded-full" style={{ width: '68%' }}></div>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              68% completado este mes
-            </div>
-          </div>
+        {profile?.user_type === 'admin' && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === '/admin'}
+                    className={cn(
+                      "hover:bg-accent hover:text-accent-foreground",
+                      location.pathname === '/admin' && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Shield className="size-4" />
+                      <span>Panel Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         )}
       </SidebarContent>
+
+      <SidebarFooter className="border-t">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <div className="px-3 py-2 text-xs text-muted-foreground">
+              v1.0.0 - Learning Platform
+            </div>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+      
+      <SidebarRail />
     </Sidebar>
   )
 }
