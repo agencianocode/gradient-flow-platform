@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Search, MessageSquare, Eye, Heart, MessageCircle, Pin, Trash2 } from "lucide-react"
-import type { CommunityPost } from "@/hooks/useCommunity"
+import type { CommunityPost } from "@/types/community"
 
 export function AdminCommunityTab() {
   const [posts, setPosts] = useState<CommunityPost[]>([])
