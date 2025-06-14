@@ -23,13 +23,14 @@ import {
   Bell,
   FileText,
   CalendarDays,
-  Shield
+  Shield,
+  Users
 } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 
-const mainItems = [
+const learningItems = [
   {
     title: "Inicio",
     url: "/",
@@ -41,14 +42,27 @@ const mainItems = [
     icon: BookOpen,
   },
   {
-    title: "Eventos",
-    url: "/events",
-    icon: Calendar,
+    title: "Calendario",
+    url: "/calendar",
+    icon: CalendarDays,
   },
+  {
+    title: "Favoritos",
+    url: "/favorites",
+    icon: Heart,
+  },
+]
+
+const communityItems = [
   {
     title: "Comunidad",
     url: "/community",
-    icon: MessageSquare,
+    icon: Users,
+  },
+  {
+    title: "Eventos",
+    url: "/events",
+    icon: Calendar,
   },
   {
     title: "Blog",
@@ -57,26 +71,16 @@ const mainItems = [
   },
 ]
 
-const personalItems = [
+const accountItems = [
   {
-    title: "Favoritos",
-    url: "/favorites",
-    icon: Heart,
+    title: "Perfil",
+    url: "/profile",
+    icon: User,
   },
   {
     title: "Notificaciones",
     url: "/notifications",
     icon: Bell,
-  },
-  {
-    title: "Calendario",
-    url: "/calendar",
-    icon: CalendarDays,
-  },
-  {
-    title: "Perfil",
-    url: "/profile",
-    icon: User,
   },
   {
     title: "Configuración",
@@ -111,10 +115,10 @@ export function AppSidebar() {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel>Aprendizaje</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {learningItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
@@ -136,10 +140,35 @@ export function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Personal</SidebarGroupLabel>
+          <SidebarGroupLabel>Comunidad</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {personalItems.map((item) => (
+              {communityItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={location.pathname === item.url}
+                    className={cn(
+                      "hover:bg-accent hover:text-accent-foreground",
+                      location.pathname === item.url && "bg-accent text-accent-foreground"
+                    )}
+                  >
+                    <Link to={item.url} className="flex items-center gap-2">
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Mi Cuenta</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {accountItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
