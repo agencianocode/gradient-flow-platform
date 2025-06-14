@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
@@ -7,7 +6,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Settings, Notifications, Shield, Trash2, LogOut } from "lucide-react"
+import { Settings, Bell, Shield, Trash2, LogOut } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 export function SettingsForm() {
@@ -50,7 +49,7 @@ export function SettingsForm() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Notifications className="h-5 w-5" />
+            <Bell className="h-5 w-5" />
             Notificaciones
           </CardTitle>
           <CardDescription>
