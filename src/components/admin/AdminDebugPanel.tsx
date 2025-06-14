@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RefreshCw, User, Shield, Database, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 
 export function AdminDebugPanel() {
@@ -14,7 +14,7 @@ export function AdminDebugPanel() {
 
   const runDiagnostics = async () => {
     setChecking(true)
-    console.log('🔍 Ejecutando diagnósticos de autenticación...')
+    console.log('🔍 Ejecutando diagnósticos...')
     
     try {
       const diagnostics: any = {
@@ -36,7 +36,6 @@ export function AdminDebugPanel() {
           email: sessionData.session?.user?.email,
           error: sessionError?.message
         }
-        console.log('📋 Sesión:', diagnostics.session)
       } catch (error: any) {
         diagnostics.errors.push(`Error obteniendo sesión: ${error.message}`)
       }
@@ -50,7 +49,6 @@ export function AdminDebugPanel() {
           email: userData.user?.email,
           error: userError?.message
         }
-        console.log('👤 Usuario:', diagnostics.user)
       } catch (error: any) {
         diagnostics.errors.push(`Error obteniendo usuario: ${error.message}`)
       }
@@ -62,7 +60,6 @@ export function AdminDebugPanel() {
         if (error) {
           diagnostics.errors.push(`Error conectando a Supabase: ${error.message}`)
         }
-        console.log('🔗 Conexión Supabase:', diagnostics.supabaseConnection)
       } catch (error: any) {
         diagnostics.errors.push(`Error de conexión: ${error.message}`)
       }
@@ -82,7 +79,6 @@ export function AdminDebugPanel() {
             error: profileError?.message,
             userType: profileData?.user_type
           }
-          console.log('👥 Perfil:', diagnostics.profileQuery)
         } catch (error: any) {
           diagnostics.errors.push(`Error obteniendo perfil: ${error.message}`)
         }

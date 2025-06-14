@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/contexts/AuthContext"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,9 +17,6 @@ import { Link } from "react-router-dom"
 
 export function Header() {
   const { user, profile, signOut } = useAuth()
-
-  console.log('Header - User:', user)
-  console.log('Header - Profile:', profile)
 
   return (
     <header className="h-16 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -111,7 +108,7 @@ export function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   className="cursor-pointer text-red-600"
-                  onClick={() => signOut()}
+                  onClick={signOut}
                 >
                   <span>Cerrar sesión</span>
                 </DropdownMenuItem>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/contexts/AuthContext"
 import { Eye, EyeOff } from "lucide-react"
 
 const Login = () => {
@@ -16,10 +16,9 @@ const Login = () => {
   const { signIn, user } = useAuth()
   const navigate = useNavigate()
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      console.log('Login - User already authenticated, redirecting to home')
+      console.log('Login - Usuario ya autenticado, redirigiendo')
       navigate("/")
     }
   }, [user, navigate])
@@ -28,20 +27,15 @@ const Login = () => {
     e.preventDefault()
     setLoading(true)
 
-    console.log('Login - Attempting login for:', email)
     const result = await signIn(email, password)
     
     if (result.success) {
-      console.log('Login - Success, navigating to home')
       navigate("/")
-    } else {
-      console.log('Login - Failed:', result.error)
     }
     
     setLoading(false)
   }
 
-  // Don't render if user is already authenticated
   if (user) {
     return null
   }
