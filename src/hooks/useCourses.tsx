@@ -112,6 +112,43 @@ export function useCourses() {
     }
   }
 
+  // New function to create a course with validation handling
+  const createCourse = async (courseData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .insert(courseData)
+        .select()
+        .single()
+
+      if (error) {
+        // Handle specific validation errors from triggers
+        if (error.message.includes('precio del curso no puede ser negativo')) {
+          throw new Error('El precio del curso debe ser 0 o mayor')
+        }
+        if (error.message.includes('duración del curso debe ser al menos 1 hora')) {
+          throw new Error('La duración mínima del curso es 1 hora')
+        }
+        throw error
+      }
+
+      toast({
+        title: "Curso creado",
+        description: "El curso se ha creado correctamente.",
+      })
+
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Error creating course:', error)
+      toast({
+        title: "Error al crear curso",
+        description: error.message,
+        variant: "destructive",
+      })
+      return { data: null, error: error.message }
+    }
+  }
+
   useEffect(() => {
     fetchCourses()
   }, [])
@@ -122,5 +159,6 @@ export function useCourses() {
     fetchCourses,
     getCourseById,
     enrollInCourse,
+    createCourse,
   }
 }

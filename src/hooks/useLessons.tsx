@@ -5,38 +5,33 @@ import { useToast } from '@/hooks/use-toast'
 
 export interface Lesson {
   id: string
+  course_id: string
   title: string
   description: string | null
-  content: string | null
+  content_type: 'video' | 'text' | 'quiz' | 'assignment'
   video_url: string | null
+  content: string | null
   duration_minutes: number
   order_index: number
   is_preview: boolean
-  content_type: 'video' | 'text' | 'quiz' | 'assignment'
-  course_id: string
   created_at: string
 }
 
-export interface LessonFormData {
+export interface CreateLessonData {
   title: string
-  description: string
-  content: string
-  video_url: string
-  duration_minutes: number
-  is_preview: boolean
+  description?: string
   content_type: 'video' | 'text' | 'quiz' | 'assignment'
+  video_url?: string
+  content?: string
+  duration_minutes: number
+  order_index: number
+  is_preview?: boolean
 }
 
 export function useLessons(courseId: string) {
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
-
-  useEffect(() => {
-    if (courseId) {
-      fetchLessons()
-    }
-  }, [courseId])
 
   const fetchLessons = async () => {
     try {
@@ -61,22 +56,27 @@ export function useLessons(courseId: string) {
     }
   }
 
-  const createLesson = async (lessonData: LessonFormData): Promise<boolean> => {
+  const createLesson = async (lessonData: CreateLessonData) => {
     try {
-      // Get the next order index
-      const nextOrderIndex = lessons.length > 0 
-        ? Math.max(...lessons.map(l => l.order_index)) + 1 
-        : 1
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('lessons')
         .insert({
           ...lessonData,
           course_id: courseId,
-          order_index: nextOrderIndex,
         })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (error) {
+        // Handle specific validation errors from triggers
+        if (error.message.includes('índice de orden debe ser mayor a 0')) {
+          throw new Error('El orden de la lección debe ser mayor a 0')
+        }
+        if (error.message.includes('Ya existe una lección con este orden')) {
+          throw new Error('Ya existe una lección con este número de orden. Por favor, elige otro.')
+        }
+        throw error
+      }
 
       toast({
         title: "Lección creada",
@@ -84,7 +84,7 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
-      return true
+      return data
     } catch (error: any) {
       console.error('Error creating lesson:', error)
       toast({
@@ -92,26 +92,34 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
 
-  const updateLesson = async (lessonId: string, lessonData: Partial<LessonFormData>): Promise<boolean> => {
+  const updateLesson = async (lessonId: string, updates: Partial<CreateLessonData>) => {
     try {
       const { error } = await supabase
         .from('lessons')
-        .update(lessonData)
+        .update(updates)
         .eq('id', lessonId)
 
-      if (error) throw error
+      if (error) {
+        // Handle specific validation errors from triggers
+        if (error.message.includes('índice de orden debe ser mayor a 0')) {
+          throw new Error('El orden de la lección debe ser mayor a 0')
+        }
+        if (error.message.includes('Ya existe una lección con este orden')) {
+          throw new Error('Ya existe una lección con este número de orden. Por favor, elige otro.')
+        }
+        throw error
+      }
 
       toast({
         title: "Lección actualizada",
-        description: "La lección se ha actualizado correctamente.",
+        description: "Los cambios se han guardado correctamente.",
       })
 
       await fetchLessons()
-      return true
     } catch (error: any) {
       console.error('Error updating lesson:', error)
       toast({
@@ -119,11 +127,11 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
 
-  const deleteLesson = async (lessonId: string): Promise<boolean> => {
+  const deleteLesson = async (lessonId: string) => {
     try {
       const { error } = await supabase
         .from('lessons')
@@ -138,7 +146,6 @@ export function useLessons(courseId: string) {
       })
 
       await fetchLessons()
-      return true
     } catch (error: any) {
       console.error('Error deleting lesson:', error)
       toast({
@@ -146,15 +153,16 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
 
-  const reorderLessons = async (reorderedLessons: Lesson[]): Promise<boolean> => {
+  const reorderLessons = async (reorderedLessons: Lesson[]) => {
     try {
+      // Update order_index for each lesson
       const updates = reorderedLessons.map((lesson, index) => ({
         id: lesson.id,
-        order_index: index + 1,
+        order_index: index + 1
       }))
 
       for (const update of updates) {
@@ -168,11 +176,10 @@ export function useLessons(courseId: string) {
 
       toast({
         title: "Orden actualizado",
-        description: "El orden de las lecciones se ha actualizado.",
+        description: "El orden de las lecciones se ha actualizado correctamente.",
       })
 
       await fetchLessons()
-      return true
     } catch (error: any) {
       console.error('Error reordering lessons:', error)
       toast({
@@ -180,17 +187,23 @@ export function useLessons(courseId: string) {
         description: error.message,
         variant: "destructive",
       })
-      return false
+      throw error
     }
   }
+
+  useEffect(() => {
+    if (courseId) {
+      fetchLessons()
+    }
+  }, [courseId])
 
   return {
     lessons,
     loading,
-    fetchLessons,
     createLesson,
     updateLesson,
     deleteLesson,
     reorderLessons,
+    fetchLessons,
   }
 }

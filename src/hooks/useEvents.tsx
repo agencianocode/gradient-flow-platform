@@ -80,32 +80,20 @@ export function useEvents() {
           event_id: eventId,
         })
 
-      if (error) throw error
-
-      // Update current attendees count manually
-      const { data: currentEvent, error: fetchError } = await supabase
-        .from('events')
-        .select('current_attendees')
-        .eq('id', eventId)
-        .single()
-
-      if (fetchError) throw fetchError
-
-      const { error: updateError } = await supabase
-        .from('events')
-        .update({ 
-          current_attendees: (currentEvent?.current_attendees || 0) + 1 
-        })
-        .eq('id', eventId)
-
-      if (updateError) throw updateError
+      if (error) {
+        // Handle specific validation errors from triggers
+        if (error.message.includes('capacidad máxima')) {
+          throw new Error('El evento ha alcanzado su capacidad máxima de asistentes')
+        }
+        throw error
+      }
 
       toast({
         title: "¡Registro exitoso!",
         description: "Te has registrado al evento correctamente.",
       })
 
-      fetchEvents() // Refresh events
+      fetchEvents() // Refresh events (attendee count will be updated automatically by trigger)
       return { success: true }
     } catch (error: any) {
       toast({
@@ -114,6 +102,47 @@ export function useEvents() {
         variant: "destructive",
       })
       return { success: false, error: error.message }
+    }
+  }
+
+  // New function to create an event with validation handling
+  const createEvent = async (eventData: any) => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .insert(eventData)
+        .select()
+        .single()
+
+      if (error) {
+        // Handle specific validation errors from triggers
+        if (error.message.includes('fecha del evento no puede ser en el pasado')) {
+          throw new Error('La fecha del evento debe ser futura')
+        }
+        if (error.message.includes('duración del evento debe ser al menos 1 minuto')) {
+          throw new Error('La duración mínima del evento es 1 minuto')
+        }
+        if (error.message.includes('máximo de asistentes debe ser mayor a 0')) {
+          throw new Error('La capacidad máxima debe ser mayor a 0')
+        }
+        throw error
+      }
+
+      toast({
+        title: "Evento creado",
+        description: "El evento se ha creado correctamente.",
+      })
+
+      await fetchEvents()
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Error creating event:', error)
+      toast({
+        title: "Error al crear evento",
+        description: error.message,
+        variant: "destructive",
+      })
+      return { data: null, error: error.message }
     }
   }
 
@@ -127,5 +156,6 @@ export function useEvents() {
     fetchEvents,
     getEventById,
     registerForEvent,
+    createEvent,
   }
 }
