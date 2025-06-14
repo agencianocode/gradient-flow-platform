@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Plus } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { FileUpload } from "./FileUpload"
 import type { Category, CourseLevel, CourseFormData } from "@/types/course"
 
 interface CourseFormProps {
@@ -96,11 +97,11 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
           Crear Curso
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Crear Nuevo Curso</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Título del Curso</Label>
@@ -178,23 +179,21 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="thumbnail">URL de Imagen</Label>
-              <Input
-                id="thumbnail"
-                value={formData.thumbnail_url}
-                onChange={(e) => setFormData({...formData, thumbnail_url: e.target.value})}
-                placeholder="https://..."
+              <Label>Imagen del Curso</Label>
+              <FileUpload
+                type="thumbnail"
+                onUploadComplete={(url) => setFormData({...formData, thumbnail_url: url})}
+                currentFile={formData.thumbnail_url}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="preview">URL del Video Preview</Label>
-              <Input
-                id="preview"
-                value={formData.preview_video_url}
-                onChange={(e) => setFormData({...formData, preview_video_url: e.target.value})}
-                placeholder="https://..."
+              <Label>Video Preview</Label>
+              <FileUpload
+                type="video"
+                onUploadComplete={(url) => setFormData({...formData, preview_video_url: url})}
+                currentFile={formData.preview_video_url}
               />
             </div>
           </div>
@@ -225,7 +224,7 @@ export function CourseForm({ categories, onCourseCreated }: CourseFormProps) {
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={createCourse}>
+            <Button onClick={createCourse} disabled={!formData.title.trim()}>
               Crear Curso
             </Button>
           </div>
