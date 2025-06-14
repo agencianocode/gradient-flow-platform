@@ -25,6 +25,7 @@ export interface Course {
   instructor?: {
     full_name: string
     avatar_url: string | null
+    bio?: string | null
   }
   category?: {
     name: string
