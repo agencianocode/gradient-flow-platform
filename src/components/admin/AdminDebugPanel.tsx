@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/integrations/supabase/client'
 
 export function AdminDebugPanel() {
-  const { user, profile, loading, profileError, refreshProfile } = useAuth()
+  const { user, profile, loading } = useAuth()
   const [checking, setChecking] = useState(false)
   const [debugInfo, setDebugInfo] = useState<any>(null)
 
@@ -102,9 +102,8 @@ export function AdminDebugPanel() {
     console.log('🔄 Refrescando autenticación...')
     try {
       await supabase.auth.refreshSession()
-      if (refreshProfile) {
-        await refreshProfile()
-      }
+      // Recargar la página para obtener el nuevo estado
+      window.location.reload()
     } catch (error: any) {
       console.error('❌ Error refrescando sesión:', error)
     }
@@ -147,12 +146,6 @@ export function AdminDebugPanel() {
                   Email: {user.email}
                 </p>
               )}
-              {profileError && (
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-red-500" />
-                  <span className="text-xs text-red-600">Error de perfil</span>
-                </div>
-              )}
             </div>
           </div>
 
@@ -172,10 +165,10 @@ export function AdminDebugPanel() {
                     {profile.full_name}
                   </p>
                 </div>
-              ) : profileError ? (
-                <Badge variant="destructive">Error en perfil</Badge>
-              ) : (
+              ) : loading ? (
                 <Badge variant="outline">Cargando perfil...</Badge>
+              ) : (
+                <Badge variant="destructive">Sin perfil</Badge>
               )}
             </div>
           </div>
@@ -256,17 +249,6 @@ export function AdminDebugPanel() {
             <RefreshCw className="h-4 w-4 mr-2" />
             Refrescar Sesión
           </Button>
-
-          {refreshProfile && (
-            <Button 
-              onClick={refreshProfile}
-              variant="outline"
-              size="sm"
-            >
-              <User className="h-4 w-4 mr-2" />
-              Recargar Perfil
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>
