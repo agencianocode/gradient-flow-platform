@@ -6,19 +6,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, AlertCircle } from "lucide-react"
 
 const Login = () => {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const { signIn, user } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
     if (user) {
-      console.log('Login - Usuario ya autenticado, redirigiendo')
       navigate("/")
     }
   }, [user, navigate])
@@ -26,11 +26,14 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError("")
 
     const result = await signIn(email, password)
     
     if (result.success) {
       navigate("/")
+    } else {
+      setError(result.error || "Error al iniciar sesión")
     }
     
     setLoading(false)
@@ -53,6 +56,13 @@ const Login = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded">
+                <AlertCircle className="h-4 w-4" />
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
