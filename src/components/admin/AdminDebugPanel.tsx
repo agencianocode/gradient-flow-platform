@@ -24,6 +24,7 @@ export function AdminDebugPanel() {
         profile: null,
         supabaseConnection: false,
         profileQuery: null,
+        adminCheck: null,
         errors: []
       }
 
@@ -84,6 +85,23 @@ export function AdminDebugPanel() {
         }
       }
 
+      // Verificar si existe algún admin en el sistema
+      try {
+        const { data: adminData, error: adminError } = await supabase
+          .from('profiles')
+          .select('id, email, user_type')
+          .eq('user_type', 'admin')
+
+        diagnostics.adminCheck = {
+          success: !adminError,
+          totalAdmins: adminData?.length || 0,
+          adminUsers: adminData || [],
+          error: adminError?.message
+        }
+      } catch (error: any) {
+        diagnostics.errors.push(`Error verificando admins: ${error.message}`)
+      }
+
       setDebugInfo(diagnostics)
       console.log('✅ Diagnósticos completados:', diagnostics)
       
@@ -106,6 +124,16 @@ export function AdminDebugPanel() {
       window.location.reload()
     } catch (error: any) {
       console.error('❌ Error refrescando sesión:', error)
+    }
+  }
+
+  const forceLogout = async () => {
+    console.log('🚪 Cerrando sesión forzada...')
+    try {
+      await supabase.auth.signOut()
+      window.location.href = '/login'
+    } catch (error: any) {
+      console.error('❌ Error cerrando sesión:', error)
     }
   }
 
@@ -178,7 +206,7 @@ export function AdminDebugPanel() {
         {debugInfo && (
           <div className="space-y-2">
             <h4 className="font-medium">Información de Diagnóstico</h4>
-            <div className="bg-muted p-3 rounded text-xs space-y-2">
+            <div className="bg-muted p-3 rounded text-xs space-y-2 max-h-60 overflow-y-auto">
               <div><strong>Timestamp:</strong> {debugInfo.timestamp}</div>
               
               {debugInfo.session && (
@@ -198,6 +226,26 @@ export function AdminDebugPanel() {
                   )}
                   {debugInfo.profileQuery.error && (
                     <span className="text-red-600"> - Error: {debugInfo.profileQuery.error}</span>
+                  )}
+                </div>
+              )}
+
+              {debugInfo.adminCheck && (
+                <div>
+                  <strong>Verificación Admin:</strong> {debugInfo.adminCheck.success ? 'OK' : 'Error'}
+                  <span> - Total Admins: {debugInfo.adminCheck.totalAdmins}</span>
+                  {debugInfo.adminCheck.adminUsers && debugInfo.adminCheck.adminUsers.length > 0 && (
+                    <div className="ml-2 mt-1">
+                      <strong>Usuarios Admin:</strong>
+                      {debugInfo.adminCheck.adminUsers.map((admin: any, index: number) => (
+                        <div key={index} className="text-xs">
+                          - {admin.email} (ID: {admin.id.substring(0, 8)}...)
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {debugInfo.adminCheck.error && (
+                    <span className="text-red-600"> - Error: {debugInfo.adminCheck.error}</span>
                   )}
                 </div>
               )}
@@ -248,6 +296,16 @@ export function AdminDebugPanel() {
           >
             <RefreshCw className="h-4 w-4 mr-2" />
             Refrescar Sesión
+          </Button>
+
+          <Button 
+            onClick={forceLogout}
+            variant="outline"
+            size="sm"
+            className="text-red-600 hover:text-red-700"
+          >
+            <XCircle className="h-4 w-4 mr-2" />
+            Cerrar Sesión
           </Button>
         </div>
       </CardContent>
